@@ -13,24 +13,28 @@ class LargeTreeDocIndexer
 
   def add_largetree_docs(root_record_uris)
     root_record_uris.each do |node_uri|
-      @node_uris.clear
+      begin
+        @node_uris.clear
 
-      json = JSONModel::HTTP.get_json(node_uri + '/tree/root',
-                                      :published_only => true)
+        json = JSONModel::HTTP.get_json(node_uri + '/tree/root',
+                                        :published_only => true)
 
-      batch << {
-        'id' => "#{node_uri}/tree/root",
-        'uri' => "#{node_uri}/tree/root",
-        'pui_parent_id' => node_uri,
-        'publish' => "true",
-        'primary_type' => "tree_root",
-        'types' => ['pui'],
-        'json' => ASUtils.to_json(json)
-      }
+        batch << {
+          'id' => "#{node_uri}/tree/root",
+          'uri' => "#{node_uri}/tree/root",
+          'pui_parent_id' => node_uri,
+          'publish' => "true",
+          'primary_type' => "tree_root",
+          'types' => ['pui'],
+          'json' => ASUtils.to_json(json)
+        }
 
-      add_waypoints(json, node_uri, nil)
+        add_waypoints(json, node_uri, nil)
 
-      index_paths_to_root(node_uri, @node_uris)
+        index_paths_to_root(node_uri, @node_uris)
+      rescue
+        Log.error "Error loading tree root for resource: #{node_uri}: #{$!}"
+      end
     end
   end
 

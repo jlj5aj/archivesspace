@@ -125,17 +125,21 @@ class PUIIndexer < PeriodicIndexer
 
   def add_infscroll_docs(resource_uris, batch)
     resource_uris.each do |resource_uri|
-      json = JSONModel::HTTP.get_json(resource_uri + '/ordered_records')
+      begin
+        json = JSONModel::HTTP.get_json(resource_uri + '/ordered_records')
 
-      batch << {
-        'id' => "#{resource_uri}/ordered_records",
-        'uri' => "#{resource_uri}/ordered_records",
-        'pui_parent_id' => resource_uri,
-        'publish' => "true",
-        'primary_type' => "resource_ordered_records",
-        'types' => ['pui'],
-        'json' => ASUtils.to_json(json)
-      }
+        batch << {
+          'id' => "#{resource_uri}/ordered_records",
+          'uri' => "#{resource_uri}/ordered_records",
+          'pui_parent_id' => resource_uri,
+          'publish' => "true",
+          'primary_type' => "resource_ordered_records",
+          'types' => ['pui'],
+          'json' => ASUtils.to_json(json)
+        }
+      rescue
+        Log.error "Error loading ordered records for resource: #{resource_uri}: #{$!}"
+      end
     end
   end
 
